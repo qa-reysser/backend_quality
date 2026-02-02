@@ -1,0 +1,623 @@
+{
+	"info": {
+		"_postman_id": "type-document-collection-001",
+		"name": "TypeDocument API - Backend Quality",
+		"description": "Colección completa para probar el CRUD de Tipos de Documento. Incluye validaciones de headers requeridos (x-correlation-id, x-request-id, x-transaction-id), unicidad de código, y manejo de errores.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "backend-quality"
+	},
+	"item": [
+		{
+			"name": "1. Listar todos los tipos de documento",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"// Guardar el primer ID si existe",
+							"if (pm.response.json().length > 0) {",
+							"    pm.environment.set(\"typeDocumentId\", pm.response.json()[0].idTypeDocument);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/type-documents",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents"
+					]
+				},
+				"description": "Obtiene todos los tipos de documento disponibles en el sistema."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Obtener tipo de documento por ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('idTypeDocument');",
+							"    pm.expect(jsonData).to.have.property('code');",
+							"    pm.expect(jsonData).to.have.property('description');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/type-documents/{{typeDocumentId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents",
+						"{{typeDocumentId}}"
+					]
+				},
+				"description": "Obtiene un tipo de documento específico por su ID. Retorna 404 si no existe."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Crear tipo de documento - DNI",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Location header is present\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"});",
+							"",
+							"// Extraer ID del header Location",
+							"var location = pm.response.headers.get(\"Location\");",
+							"if (location) {",
+							"    var id = location.split('/').pop();",
+							"    pm.environment.set(\"dniTypeDocumentId\", id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"DNI\",\n  \"description\": \"Documento Nacional de Identidad\",\n  \"validationPattern\": \"^[0-9]{8}$\",\n  \"minLength\": 8,\n  \"maxLength\": 8,\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-documents",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents"
+					]
+				},
+				"description": "Crea un nuevo tipo de documento DNI. El código debe ser único."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Crear tipo de documento - PASSPORT",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"if (location) {",
+							"    var id = location.split('/').pop();",
+							"    pm.environment.set(\"passportTypeDocumentId\", id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"PASSPORT\",\n  \"description\": \"Pasaporte Internacional\",\n  \"validationPattern\": \"^[A-Z0-9]{6,12}$\",\n  \"minLength\": 6,\n  \"maxLength\": 12,\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-documents",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents"
+					]
+				},
+				"description": "Crea un tipo de documento para Pasaporte."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Crear tipo de documento - RUC",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"if (location) {",
+							"    var id = location.split('/').pop();",
+							"    pm.environment.set(\"rucTypeDocumentId\", id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"RUC\",\n  \"description\": \"Registro Único de Contribuyentes\",\n  \"validationPattern\": \"^[0-9]{11}$\",\n  \"minLength\": 11,\n  \"maxLength\": 11,\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-documents",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents"
+					]
+				},
+				"description": "Crea un tipo de documento para RUC (empresas)."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Actualizar tipo de documento",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Description was updated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.description).to.include(\"Actualizado\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"DNI\",\n  \"description\": \"Documento Nacional de Identidad - Actualizado\",\n  \"validationPattern\": \"^[0-9]{8}$\",\n  \"minLength\": 8,\n  \"maxLength\": 8,\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-documents/{{dniTypeDocumentId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents",
+						"{{dniTypeDocumentId}}"
+					]
+				},
+				"description": "Actualiza un tipo de documento existente. El código debe seguir siendo único."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Error - Código duplicado (409)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"",
+							"pm.test(\"Error type is duplicate_value_detected\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors.subtype).to.eql(\"duplicate_value_detected\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"DNI\",\n  \"description\": \"Esto fallará porque DNI ya existe\",\n  \"validationPattern\": \"^[0-9]{8}$\",\n  \"minLength\": 8,\n  \"maxLength\": 8,\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-documents",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents"
+					]
+				},
+				"description": "Prueba el error 409 al intentar crear un tipo de documento con código duplicado."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Error - Validación campo requerido (400)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"code\": \"X\",\n  \"description\": \"Fallará por código muy corto\",\n  \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-documents",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents"
+					]
+				},
+				"description": "Prueba validación: código debe tener mínimo 2 caracteres."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Error - ID no existe (404)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Error type is resource_not_found\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors.type).to.eql(\"resource_not_found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/type-documents/99999",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents",
+						"99999"
+					]
+				},
+				"description": "Prueba el error 404 cuando el ID no existe."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Eliminar tipo de documento",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/type-documents/{{rucTypeDocumentId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"type-documents",
+						"{{rucTypeDocumentId}}"
+					]
+				},
+				"description": "Elimina un tipo de documento. Retorna 204 No Content si es exitoso."
+			},
+			"response": []
+		}
+	]
+}

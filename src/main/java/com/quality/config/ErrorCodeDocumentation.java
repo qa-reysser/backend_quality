@@ -96,13 +96,13 @@ public class ErrorCodeDocumentation {
                     ErrorCodeConstants.SUBTYPE_CODE_NOT_FOUND_BY_ID,
                     ErrorCodeConstants.SUBTYPE_NOT_FOUND_BY_ID,
                     "Recurso no encontrado por ID especificado",
-                    "Priority with ID 999 not found"
+                    "Client with ID 999 not found"
             ),
             new ErrorSubtypeInfo(
                     ErrorCodeConstants.SUBTYPE_CODE_NOT_FOUND_AFTER_OPERATION,
                     ErrorCodeConstants.SUBTYPE_NOT_FOUND_AFTER_OPERATION,
                     "Recurso no encontrado después de una operación",
-                    "Priority not found after update operation"
+                    "TypeDocument not found after update operation"
             ),
             new ErrorSubtypeInfo(
                     ErrorCodeConstants.SUBTYPE_CODE_ENDPOINT_NOT_FOUND,
@@ -142,7 +142,7 @@ public class ErrorCodeDocumentation {
                     ErrorCodeConstants.SUBTYPE_CODE_DUPLICATE_VALUE,
                     ErrorCodeConstants.SUBTYPE_DUPLICATE_VALUE,
                     "Valor duplicado detectado (violación de restricción única)",
-                    "Priority with name 'Alta' already exists"
+                    "Client with email 'juan.perez@example.com' already exists"
             )
     );
 

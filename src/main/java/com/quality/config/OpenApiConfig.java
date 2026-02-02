@@ -37,7 +37,7 @@ public class OpenApiConfig {
      */
     private Info apiInfo() {
         return new Info()
-                .title("Gestión de Prioridades API")
+                .title("Gestión de Clientes y Tipos de Documento API")
                 .version("1.0.0")
                 .description(buildApiDescription())
                 .contact(new Contact()
@@ -52,8 +52,9 @@ public class OpenApiConfig {
      * Builds API description.
      */
     private String buildApiDescription() {
-        return "API RESTful para la gestión completa de prioridades mediante operaciones CRUD. " +
-               "Incluye validación de encabezados personalizados, manejo estructurado de errores y enlaces HATEOAS.";
+        return "API RESTful para la gestión completa de clientes y tipos de documento mediante operaciones CRUD. " +
+               "Incluye validación de encabezados personalizados, validación de unicidad (email, documento), " +
+               "relaciones entre entidades, manejo estructurado de errores y enlaces HATEOAS.";
     }
 
     /**
@@ -168,7 +169,7 @@ public class OpenApiConfig {
         notFoundErrorDetail.put("timestamp", "2025-11-13T10:30:00.000000000");
         notFoundErrorDetail.put("status", 404);
         notFoundErrorDetail.put("error", "Not Found");
-        notFoundErrorDetail.put("message", "Priority with ID 999 not found");
+        notFoundErrorDetail.put("message", "Resource with ID 999 not found");
         notFoundErrorDetail.put("typeCode", "TYP-002");
         notFoundErrorDetail.put("type", "resource_not_found");
         notFoundErrorDetail.put("subtypeCode", "RNF-001");
@@ -180,15 +181,15 @@ public class OpenApiConfig {
         notFoundDetails.put("correctFormat", "ID must exist in the database");
         notFoundErrorDetail.put("details", notFoundDetails);
         
-        notFoundErrorDetail.put("path", "/priorities/999");
+        notFoundErrorDetail.put("path", "/clients/999");
         notFoundErrorDetail.put("documentationUrl", "http://localhost:8080/api/docs#/RNF-001");
         
         Map<String, Object> notFoundLinks = new LinkedHashMap<>();
         Map<String, String> notFoundSelf = new LinkedHashMap<>();
-        notFoundSelf.put("href", "/priorities/999");
+        notFoundSelf.put("href", "/clients/999");
         notFoundSelf.put("method", "GET");
         Map<String, String> listLink = new LinkedHashMap<>();
-        listLink.put("href", "/priorities");
+        listLink.put("href", "/clients");
         listLink.put("method", "GET");
         notFoundLinks.put("self", notFoundSelf);
         notFoundLinks.put("list", listLink);
@@ -219,12 +220,12 @@ public class OpenApiConfig {
         validationDetails.put("correctFormat", "Name must be between 3 and 70 characters");
         validationErrorDetail.put("details", validationDetails);
         
-        validationErrorDetail.put("path", "/priorities");
+        validationErrorDetail.put("path", "/clients");
         validationErrorDetail.put("documentationUrl", "http://localhost:8080/api/docs#/RBV-003");
         
         Map<String, Object> validationLinks = new LinkedHashMap<>();
         Map<String, String> validationSelf = new LinkedHashMap<>();
-        validationSelf.put("href", "/priorities");
+        validationSelf.put("href", "/clients");
         validationSelf.put("method", "POST");
         validationLinks.put("self", validationSelf);
         validationErrorDetail.put("_links", validationLinks);
@@ -242,19 +243,19 @@ public class OpenApiConfig {
         conflictErrorDetail.put("timestamp", "2025-11-13T10:30:00.000000000");
         conflictErrorDetail.put("status", 409);
         conflictErrorDetail.put("error", "Conflict");
-        conflictErrorDetail.put("message", "Priority with name 'Alta' already exists");
+        conflictErrorDetail.put("message", "Duplicate field value detected");
         conflictErrorDetail.put("typeCode", "TYP-003");
         conflictErrorDetail.put("type", "request_body_validation_error");
         conflictErrorDetail.put("subtypeCode", "RBV-005");
         conflictErrorDetail.put("subtype", "duplicate_value_detected");
         
         Map<String, Object> conflictDetails = new LinkedHashMap<>();
-        conflictDetails.put("problematicField", "name");
-        conflictDetails.put("invalidValue", "Alta");
-        conflictDetails.put("correctFormat", "Name must be unique");
+        conflictDetails.put("problematicField", "field");
+        conflictDetails.put("invalidValue", "value");
+        conflictDetails.put("correctFormat", "Value must be unique");
         conflictErrorDetail.put("details", conflictDetails);
         
-        conflictErrorDetail.put("path", "/priorities");
+        conflictErrorDetail.put("path", "/clients");
         conflictErrorDetail.put("documentationUrl", "http://localhost:8080/api/docs#/RBV-005");
         
         Map<String, Object> conflictLinks = new LinkedHashMap<>();

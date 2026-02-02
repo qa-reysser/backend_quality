@@ -1,0 +1,762 @@
+{
+	"info": {
+		"_postman_id": "client-collection-001",
+		"name": "Client API - Backend Quality",
+		"description": "Colección completa para probar el CRUD de Clientes. Incluye validaciones de headers requeridos (x-correlation-id, x-request-id, x-transaction-id), unicidad de email y documento, validación de TypeDocument, y manejo de errores.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "backend-quality"
+	},
+	"item": [
+		{
+			"name": "1. Listar todos los clientes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"// Guardar el primer ID si existe",
+							"if (pm.response.json().length > 0) {",
+							"    pm.environment.set(\"clientId\", pm.response.json()[0].idClient);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Obtiene todos los clientes registrados en el sistema."
+			},
+			"response": []
+		},
+		{
+			"name": "2. Obtener cliente por ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('idClient');",
+							"    pm.expect(jsonData).to.have.property('firstName');",
+							"    pm.expect(jsonData).to.have.property('lastName');",
+							"    pm.expect(jsonData).to.have.property('email');",
+							"    pm.expect(jsonData).to.have.property('documentNumber');",
+							"    pm.expect(jsonData).to.have.property('idTypeDocument');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/clients/{{clientId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients",
+						"{{clientId}}"
+					]
+				},
+				"description": "Obtiene un cliente específico por su ID. Retorna 404 si no existe."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Crear cliente - Juan Pérez (DNI)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Location header is present\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"});",
+							"",
+							"// Extraer ID del header Location",
+							"var location = pm.response.headers.get(\"Location\");",
+							"if (location) {",
+							"    var id = location.split('/').pop();",
+							"    pm.environment.set(\"juanClientId\", id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"Pérez García\",\n  \"idTypeDocument\": {{dniTypeDocumentId}},\n  \"documentNumber\": \"12345678\",\n  \"email\": \"juan.perez@example.com\",\n  \"phone\": \"+51987654321\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Crea un nuevo cliente con DNI. Email y documento deben ser únicos. El idTypeDocument debe existir."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Crear cliente - María López (PASSPORT)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"if (location) {",
+							"    var id = location.split('/').pop();",
+							"    pm.environment.set(\"mariaClientId\", id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"María\",\n  \"lastName\": \"López Rodríguez\",\n  \"idTypeDocument\": {{passportTypeDocumentId}},\n  \"documentNumber\": \"AB123456\",\n  \"email\": \"maria.lopez@example.com\",\n  \"phone\": \"+51912345678\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Crea un cliente con Pasaporte Internacional."
+			},
+			"response": []
+		},
+		{
+			"name": "5. Crear cliente - Carlos Empresa (RUC)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"if (location) {",
+							"    var id = location.split('/').pop();",
+							"    pm.environment.set(\"carlosClientId\", id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Carlos\",\n  \"lastName\": \"Empresa SAC\",\n  \"idTypeDocument\": {{rucTypeDocumentId}},\n  \"documentNumber\": \"20123456789\",\n  \"email\": \"carlos.empresa@example.com\",\n  \"phone\": \"+51998765432\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Crea un cliente empresarial con RUC."
+			},
+			"response": []
+		},
+		{
+			"name": "6. Actualizar cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Phone was updated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.phone).to.eql(\"+51999888777\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"Pérez García\",\n  \"idTypeDocument\": {{dniTypeDocumentId}},\n  \"documentNumber\": \"12345678\",\n  \"email\": \"juan.perez@example.com\",\n  \"phone\": \"+51999888777\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients/{{juanClientId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients",
+						"{{juanClientId}}"
+					]
+				},
+				"description": "Actualiza un cliente existente. Email y documento deben seguir siendo únicos."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Error - Email duplicado (409)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"",
+							"pm.test(\"Error is about duplicate email\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors.subtype).to.eql(\"duplicate_value_detected\");",
+							"    pm.expect(jsonData.errors.details.problematicField).to.eql(\"email\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Pedro\",\n  \"lastName\": \"Sánchez\",\n  \"idTypeDocument\": {{dniTypeDocumentId}},\n  \"documentNumber\": \"87654321\",\n  \"email\": \"juan.perez@example.com\",\n  \"phone\": \"+51911111111\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Prueba el error 409 al intentar crear un cliente con email duplicado."
+			},
+			"response": []
+		},
+		{
+			"name": "8. Error - Documento duplicado (409)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"",
+							"pm.test(\"Error is about duplicate document\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors.subtype).to.eql(\"duplicate_value_detected\");",
+							"    pm.expect(jsonData.errors.details.problematicField).to.eql(\"documentNumber\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Torres\",\n  \"idTypeDocument\": {{dniTypeDocumentId}},\n  \"documentNumber\": \"12345678\",\n  \"email\": \"ana.torres@example.com\",\n  \"phone\": \"+51922222222\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Prueba el error 409 al intentar crear un cliente con documento duplicado."
+			},
+			"response": []
+		},
+		{
+			"name": "9. Error - TypeDocument no existe (404)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Error is about TypeDocument not found\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors.type).to.eql(\"resource_not_found\");",
+							"    pm.expect(jsonData.errors.message).to.include(\"TypeDocument\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Luis\",\n  \"lastName\": \"Ramírez\",\n  \"idTypeDocument\": 99999,\n  \"documentNumber\": \"11111111\",\n  \"email\": \"luis.ramirez@example.com\",\n  \"phone\": \"+51933333333\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Prueba el error 404 cuando el idTypeDocument no existe en la base de datos."
+			},
+			"response": []
+		},
+		{
+			"name": "10. Error - Email inválido (400)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Error is about email validation\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors.details.problematicField).to.eql(\"email\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Roberto\",\n  \"lastName\": \"González\",\n  \"idTypeDocument\": {{dniTypeDocumentId}},\n  \"documentNumber\": \"22222222\",\n  \"email\": \"email-invalido\",\n  \"phone\": \"+51944444444\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/clients",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients"
+					]
+				},
+				"description": "Prueba validación del formato de email."
+			},
+			"response": []
+		},
+		{
+			"name": "11. Error - Cliente no existe (404)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Error type is resource_not_found\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errors.type).to.eql(\"resource_not_found\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/clients/99999",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients",
+						"99999"
+					]
+				},
+				"description": "Prueba el error 404 cuando el ID del cliente no existe."
+			},
+			"response": []
+		},
+		{
+			"name": "12. Eliminar cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text",
+						"description": "UUID v4 para correlación entre servicios (36 caracteres)"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de solicitud (36 caracteres)"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text",
+						"description": "UUID v4 identificador único de transacción (36 caracteres)"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/clients/{{carlosClientId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"clients",
+						"{{carlosClientId}}"
+					]
+				},
+				"description": "Elimina un cliente. Retorna 204 No Content si es exitoso."
+			},
+			"response": []
+		}
+	]
+}

@@ -2,9 +2,11 @@ package com.quality.controller;
 
 import com.quality.config.ErrorCodeDescriptions;
 import com.quality.config.OpenApiHeaders;
-import com.quality.dto.PriorityDTO;
-import com.quality.model.Priority;
-import com.quality.service.implement.PriorityServiceImplement;
+import com.quality.dto.ClientDTO;
+import com.quality.model.Client;
+import com.quality.model.TypeDocument;
+import com.quality.service.implement.ClientServiceImplement;
+import com.quality.service.implement.TypeDocumentServiceImplement;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,26 +32,27 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
-@RequestMapping("/priorities")
+@RequestMapping("/clients")
 @RequiredArgsConstructor
-@Tag(name = "Prioridades", description = "Operaciones CRUD para la gestión de prioridades")
-public class PriorityController {
-    private final PriorityServiceImplement service;
+@Tag(name = "Clientes", description = "Operaciones CRUD para la gestión de clientes")
+public class ClientController {
+    private final ClientServiceImplement service;
+    private final TypeDocumentServiceImplement typeDocumentService;
     @Qualifier("defaultMapper")
     private final ModelMapper mapper;
 
     @GetMapping
     @OpenApiHeaders
     @Operation(
-        summary = "Listar todas las prioridades", 
-        description = "Obtiene la lista completa de prioridades disponibles. " +
+        summary = "Listar todos los clientes", 
+        description = "Obtiene la lista completa de clientes registrados. " +
                      "Requiere encabezados de validación (x-correlation-id, x-client-id, x-user-id)."
     )
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
         @ApiResponse(
             responseCode = "400", 
-            description = ErrorCodeDescriptions.GET_ALL_400,
+            description = ErrorCodeDescriptions.CLIENT_GET_ALL_400,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
@@ -59,23 +62,23 @@ public class PriorityController {
             )
         )
     })
-    public ResponseEntity<List<PriorityDTO>> findAll() {
-        List<PriorityDTO> list = service.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
+    public ResponseEntity<List<ClientDTO>> findAll() {
+        List<ClientDTO> list = service.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
         return new ResponseEntity<>(list, OK);
     }
 
     @GetMapping("/{id}")
     @OpenApiHeaders
     @Operation(
-        summary = "Obtener prioridad por ID", 
-        description = "Recupera una prioridad específica mediante su identificador. " +
+        summary = "Obtener cliente por ID", 
+        description = "Recupera un cliente específico mediante su identificador. " +
                      "Requiere encabezados de validación y que el ID exista en la base de datos."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Prioridad encontrada exitosamente"),
+        @ApiResponse(responseCode = "200", description = "Cliente encontrado exitosamente"),
         @ApiResponse(
             responseCode = "400",
-            description = ErrorCodeDescriptions.GET_BY_ID_400,
+            description = ErrorCodeDescriptions.CLIENT_GET_BY_ID_400,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
@@ -86,34 +89,34 @@ public class PriorityController {
         ),
         @ApiResponse(
             responseCode = "404",
-            description = ErrorCodeDescriptions.GET_BY_ID_404,
+            description = ErrorCodeDescriptions.CLIENT_GET_BY_ID_404,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
                 examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = com.quality.config.SwaggerExamples.RESOURCE_NOT_FOUND_ERROR
+                    value = com.quality.config.SwaggerExamples.CLIENT_NOT_FOUND_ERROR
                 )
             )
         )
     })
-    public ResponseEntity<PriorityDTO> findById(
-            @Parameter(description = "ID de la prioridad", required = true, example = "1")
+    public ResponseEntity<ClientDTO> findById(
+            @Parameter(description = "ID del cliente", required = true, example = "1")
             @PathVariable("id") @NonNull Integer id) {
-        Priority obj = service.findById(id);
+        Client obj = service.findById(id);
         return new ResponseEntity<>(this.convertToDto(obj), OK);
     }
 
     @PostMapping
     @OpenApiHeaders
     @Operation(
-        summary = "Crear nueva prioridad", 
-        description = "Crea una nueva prioridad. El nombre debe ser único y cumplir validaciones (3-70 caracteres)."
+        summary = "Crear nuevo cliente", 
+        description = "Crea un nuevo cliente. El email y número de documento deben ser únicos y cumplir validaciones."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Prioridad creada exitosamente. Header Location contiene la URI del nuevo recurso."),
+        @ApiResponse(responseCode = "201", description = "Cliente creado exitosamente. Header Location contiene la URI del nuevo recurso."),
         @ApiResponse(
             responseCode = "400",
-            description = ErrorCodeDescriptions.POST_400,
+            description = ErrorCodeDescriptions.CLIENT_POST_400,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
@@ -126,106 +129,146 @@ public class PriorityController {
                     @io.swagger.v3.oas.annotations.media.ExampleObject(
                         name = "validationError",
                         summary = "Error de validación",
-                        value = com.quality.config.SwaggerExamples.VALIDATION_ERROR
-                    )
-                }
-            )
-        ),
-        @ApiResponse(
-            responseCode = "409",
-            description = ErrorCodeDescriptions.POST_409,
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
-                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = com.quality.config.SwaggerExamples.CONFLICT_ERROR
-                )
-            )
-        )
-    })
-    @SuppressWarnings("null") // service.save() is @NonNull, guarantee satisfied
-    public ResponseEntity<Void> save(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos de la prioridad a crear (sin ID)", required = true)
-            @Valid @RequestBody PriorityDTO dto) {
-        Priority obj = service.save(convertToEntity(dto));
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(obj.getIdPriority()).toUri();
-        return ResponseEntity.created(location).build();
-    }
-
-    @PutMapping("/{id}")
-    @OpenApiHeaders
-    @Operation(
-        summary = "Actualizar prioridad", 
-        description = "Actualiza una prioridad existente. El ID debe existir y el nombre debe permanecer único."
-    )
-    @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Prioridad actualizada exitosamente"),
-        @ApiResponse(
-            responseCode = "400",
-            description = ErrorCodeDescriptions.PUT_400,
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
-                examples = {
-                    @io.swagger.v3.oas.annotations.media.ExampleObject(
-                        name = "headerError",
-                        summary = "Error de encabezado",
-                        value = com.quality.config.SwaggerExamples.HEADER_VALIDATION_ERROR
-                    ),
-                    @io.swagger.v3.oas.annotations.media.ExampleObject(
-                        name = "validationError",
-                        summary = "Error de validación",
-                        value = com.quality.config.SwaggerExamples.VALIDATION_ERROR
+                        value = com.quality.config.SwaggerExamples.CLIENT_VALIDATION_ERROR
                     )
                 }
             )
         ),
         @ApiResponse(
             responseCode = "404",
-            description = ErrorCodeDescriptions.PUT_404,
+            description = ErrorCodeDescriptions.CLIENT_POST_404,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
                 examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = com.quality.config.SwaggerExamples.RESOURCE_NOT_FOUND_ERROR
+                    name = "typeDocumentNotFound",
+                    summary = "Tipo de documento no encontrado",
+                    value = com.quality.config.SwaggerExamples.TYPE_DOCUMENT_NOT_FOUND_ERROR
                 )
             )
         ),
         @ApiResponse(
             responseCode = "409",
-            description = ErrorCodeDescriptions.PUT_409,
+            description = ErrorCodeDescriptions.CLIENT_POST_409,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
-                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = com.quality.config.SwaggerExamples.CONFLICT_ERROR
-                )
+                examples = {
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "duplicateEmail",
+                        summary = "Email duplicado",
+                        value = com.quality.config.SwaggerExamples.CLIENT_DUPLICATE_EMAIL_ERROR
+                    ),
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "duplicateDocument",
+                        summary = "Número de documento duplicado",
+                        value = com.quality.config.SwaggerExamples.CLIENT_DUPLICATE_DOCUMENT_ERROR
+                    )
+                }
+            )
+        )
+    })
+    @SuppressWarnings("null") // service.save() is @NonNull, guarantee satisfied
+    public ResponseEntity<Void> save(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del cliente a crear (sin ID)", required = true)
+            @Valid @RequestBody ClientDTO dto) {
+        Client obj = service.save(convertToEntity(dto));
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(obj.getIdClient()).toUri();
+        return ResponseEntity.created(location).build();
+    }
+
+    @PutMapping("/{id}")
+    @OpenApiHeaders
+    @Operation(
+        summary = "Actualizar cliente", 
+        description = "Actualiza un cliente existente. El ID debe existir, el email y número de documento deben permanecer únicos."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Cliente actualizado exitosamente"),
+        @ApiResponse(
+            responseCode = "400",
+            description = ErrorCodeDescriptions.CLIENT_PUT_400,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
+                examples = {
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "headerError",
+                        summary = "Error de encabezado",
+                        value = com.quality.config.SwaggerExamples.HEADER_VALIDATION_ERROR
+                    ),
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "validationError",
+                        summary = "Error de validación",
+                        value = com.quality.config.SwaggerExamples.CLIENT_VALIDATION_ERROR
+                    )
+                }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "404",
+            description = ErrorCodeDescriptions.CLIENT_PUT_404_CLIENT + " | " + ErrorCodeDescriptions.CLIENT_PUT_404_TYPE_DOC,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
+                examples = {
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "clientNotFound",
+                        summary = "Cliente no encontrado",
+                        value = com.quality.config.SwaggerExamples.CLIENT_NOT_FOUND_ERROR
+                    ),
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "typeDocumentNotFound",
+                        summary = "Tipo de documento no encontrado",
+                        value = com.quality.config.SwaggerExamples.TYPE_DOCUMENT_NOT_FOUND_ERROR
+                    )
+                }
+            )
+        ),
+        @ApiResponse(
+            responseCode = "409",
+            description = ErrorCodeDescriptions.CLIENT_PUT_409,
+            content = @Content(
+                mediaType = "application/json",
+                schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
+                examples = {
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "duplicateEmail",
+                        summary = "Email duplicado",
+                        value = com.quality.config.SwaggerExamples.CLIENT_DUPLICATE_EMAIL_ERROR
+                    ),
+                    @io.swagger.v3.oas.annotations.media.ExampleObject(
+                        name = "duplicateDocument",
+                        summary = "Número de documento duplicado",
+                        value = com.quality.config.SwaggerExamples.CLIENT_DUPLICATE_DOCUMENT_ERROR
+                    )
+                }
             )
         )
     })
     @SuppressWarnings("null") // service.update() is @NonNull, guarantee satisfied
-    public ResponseEntity<PriorityDTO> update(
-            @Parameter(description = "ID de la prioridad", required = true, example = "1")
+    public ResponseEntity<ClientDTO> update(
+            @Parameter(description = "ID del cliente", required = true, example = "1")
             @PathVariable("id") @NonNull Integer id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados de la prioridad", required = true)
-            @Valid @RequestBody PriorityDTO dto) {
-        dto.setIdPriority(id);
-        Priority obj = service.update(convertToEntity(dto), id);
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados del cliente", required = true)
+            @Valid @RequestBody ClientDTO dto) {
+        dto.setIdClient(id);
+        Client obj = service.update(convertToEntity(dto), id);
         return new ResponseEntity<>(convertToDto(obj), OK);
     }
 
     @DeleteMapping("/{id}")
     @OpenApiHeaders
     @Operation(
-        summary = "Eliminar prioridad", 
-        description = "Elimina una prioridad por su ID. Requiere que el ID exista en la base de datos."
+        summary = "Eliminar cliente", 
+        description = "Elimina un cliente por su ID. Requiere que el ID exista en la base de datos."
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "204", description = "Prioridad eliminada exitosamente"),
+        @ApiResponse(responseCode = "204", description = "Cliente eliminado exitosamente"),
         @ApiResponse(
             responseCode = "400",
-            description = ErrorCodeDescriptions.DELETE_400,
+            description = ErrorCodeDescriptions.CLIENT_DELETE_400,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
@@ -236,18 +279,18 @@ public class PriorityController {
         ),
         @ApiResponse(
             responseCode = "404",
-            description = ErrorCodeDescriptions.DELETE_404,
+            description = ErrorCodeDescriptions.CLIENT_DELETE_404,
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(ref = "#/components/schemas/ErrorResponse"),
                 examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
-                    value = com.quality.config.SwaggerExamples.RESOURCE_NOT_FOUND_ERROR
+                    value = com.quality.config.SwaggerExamples.CLIENT_NOT_FOUND_ERROR
                 )
             )
         )
     })
     public ResponseEntity<Void> delete(
-            @Parameter(description = "ID de la prioridad", required = true, example = "1")
+            @Parameter(description = "ID del cliente", required = true, example = "1")
             @PathVariable("id") @NonNull Integer id) {
         service.delete(id);
         return new ResponseEntity<>(NO_CONTENT);
@@ -255,14 +298,18 @@ public class PriorityController {
 
     @NonNull
     @SuppressWarnings("null") // ModelMapper guarantees non-null mapping result
-    private PriorityDTO convertToDto(@NonNull Priority obj) {
-        return Objects.requireNonNull(mapper.map(obj, PriorityDTO.class), "Mapping result cannot be null");
+    private ClientDTO convertToDto(@NonNull Client obj) {
+        ClientDTO dto = Objects.requireNonNull(mapper.map(obj, ClientDTO.class), "Mapping result cannot be null");
+        dto.setIdTypeDocument(obj.getTypeDocument().getIdTypeDocument());
+        return dto;
     }
 
     @NonNull
     @SuppressWarnings("null") // ModelMapper guarantees non-null mapping result
-    private Priority convertToEntity(@NonNull PriorityDTO dto) {
-        return Objects.requireNonNull(mapper.map(dto, Priority.class), "Mapping result cannot be null");
+    private Client convertToEntity(@NonNull ClientDTO dto) {
+        Client client = Objects.requireNonNull(mapper.map(dto, Client.class), "Mapping result cannot be null");
+        TypeDocument typeDocument = typeDocumentService.findById(dto.getIdTypeDocument());
+        client.setTypeDocument(typeDocument);
+        return client;
     }
 }
-

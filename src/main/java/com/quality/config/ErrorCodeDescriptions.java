@@ -56,39 +56,85 @@ public class ErrorCodeDescriptions {
             "Encabezados faltantes o datos de validación incorrectos" + 
             HEADER_ERROR_CODES + VALIDATION_ERROR_CODES;
 
-    public static final String RESOURCE_NOT_FOUND_BY_ID = 
-            "Prioridad no encontrada - El ID especificado no existe en la base de datos" + 
-            RESOURCE_NOT_FOUND_CODES;
-
-    public static final String CONFLICT_DUPLICATE = 
-            "Conflicto - Nombre duplicado. Ya existe una prioridad con ese nombre" + 
-            VALIDATION_ERROR_CODES;
-
     public static final String ALL_ERROR_CODES = 
             "Pueden ocurrir múltiples tipos de error" + 
             HEADER_ERROR_CODES + RESOURCE_NOT_FOUND_CODES + VALIDATION_ERROR_CODES;
 
-    // ========== Specific Endpoint Descriptions ==========
+    // ========== Resource-Specific Error Messages ==========
     
-    // GET /priorities
-    public static final String GET_ALL_400 = HEADER_ONLY;
+    public static final String CLIENT_NOT_FOUND_BY_ID = 
+            "Cliente no encontrado - El ID especificado no existe en la base de datos" + 
+            RESOURCE_NOT_FOUND_CODES;
 
-    // GET /priorities/{id}
-    public static final String GET_BY_ID_400 = HEADER_ONLY;
-    public static final String GET_BY_ID_404 = RESOURCE_NOT_FOUND_BY_ID;
+    public static final String TYPE_DOCUMENT_NOT_FOUND_BY_ID = 
+            "Tipo de documento no encontrado - El ID especificado no existe en la base de datos" + 
+            RESOURCE_NOT_FOUND_CODES;
 
-    // POST /priorities
-    public static final String POST_400 = HEADER_AND_VALIDATION;
-    public static final String POST_409 = CONFLICT_DUPLICATE;
+    public static final String TYPE_DOCUMENT_NOT_FOUND_IN_CLIENT = 
+            "Tipo de documento no encontrado - El idTypeDocument especificado no existe. Debe crear el tipo de documento primero" + 
+            RESOURCE_NOT_FOUND_CODES;
 
-    // PUT /priorities/{id}
-    public static final String PUT_400 = HEADER_AND_VALIDATION;
-    public static final String PUT_404 = RESOURCE_NOT_FOUND_BY_ID;
-    public static final String PUT_409 = CONFLICT_DUPLICATE;
+    public static final String CLIENT_CONFLICT_EMAIL = 
+            "Conflicto - Email duplicado. Ya existe un cliente con ese email" + 
+            VALIDATION_ERROR_CODES;
 
-    // DELETE /priorities/{id}
-    public static final String DELETE_400 = HEADER_ONLY;
-    public static final String DELETE_404 = RESOURCE_NOT_FOUND_BY_ID;
+    public static final String CLIENT_CONFLICT_DOCUMENT = 
+            "Conflicto - Número de documento duplicado. Ya existe un cliente con ese número de documento" + 
+            VALIDATION_ERROR_CODES;
+
+    public static final String TYPE_DOCUMENT_CONFLICT_CODE = 
+            "Conflicto - Código duplicado. Ya existe un tipo de documento con ese código" + 
+            VALIDATION_ERROR_CODES;
+
+    // ========== Specific Endpoint Descriptions - TypeDocument ==========
+    
+    // GET /type-documents
+    public static final String TYPE_DOC_GET_ALL_400 = HEADER_ONLY;
+
+    // GET /type-documents/{id}
+    public static final String TYPE_DOC_GET_BY_ID_400 = HEADER_ONLY;
+    public static final String TYPE_DOC_GET_BY_ID_404 = TYPE_DOCUMENT_NOT_FOUND_BY_ID;
+
+    // POST /type-documents
+    public static final String TYPE_DOC_POST_400 = HEADER_AND_VALIDATION;
+    public static final String TYPE_DOC_POST_409 = TYPE_DOCUMENT_CONFLICT_CODE;
+
+    // PUT /type-documents/{id}
+    public static final String TYPE_DOC_PUT_400 = HEADER_AND_VALIDATION;
+    public static final String TYPE_DOC_PUT_404 = TYPE_DOCUMENT_NOT_FOUND_BY_ID;
+    public static final String TYPE_DOC_PUT_409 = TYPE_DOCUMENT_CONFLICT_CODE;
+
+    // DELETE /type-documents/{id}
+    public static final String TYPE_DOC_DELETE_400 = HEADER_ONLY;
+    public static final String TYPE_DOC_DELETE_404 = TYPE_DOCUMENT_NOT_FOUND_BY_ID;
+
+    // ========== Specific Endpoint Descriptions - Client ==========
+    
+    // GET /clients
+    public static final String CLIENT_GET_ALL_400 = HEADER_ONLY;
+
+    // GET /clients/{id}
+    public static final String CLIENT_GET_BY_ID_400 = HEADER_ONLY;
+    public static final String CLIENT_GET_BY_ID_404 = CLIENT_NOT_FOUND_BY_ID;
+
+    // POST /clients
+    public static final String CLIENT_POST_400 = HEADER_AND_VALIDATION;
+    public static final String CLIENT_POST_404 = TYPE_DOCUMENT_NOT_FOUND_IN_CLIENT;
+    public static final String CLIENT_POST_409 = 
+            "Conflicto - Email o número de documento duplicado. Ya existe un cliente con ese email o número de documento" + 
+            VALIDATION_ERROR_CODES;
+
+    // PUT /clients/{id}
+    public static final String CLIENT_PUT_400 = HEADER_AND_VALIDATION;
+    public static final String CLIENT_PUT_404_CLIENT = CLIENT_NOT_FOUND_BY_ID;
+    public static final String CLIENT_PUT_404_TYPE_DOC = TYPE_DOCUMENT_NOT_FOUND_IN_CLIENT;
+    public static final String CLIENT_PUT_409 = 
+            "Conflicto - Email o número de documento duplicado. Ya existe un cliente con ese email o número de documento" + 
+            VALIDATION_ERROR_CODES;
+
+    // DELETE /clients/{id}
+    public static final String CLIENT_DELETE_400 = HEADER_ONLY;
+    public static final String CLIENT_DELETE_404 = CLIENT_NOT_FOUND_BY_ID;
 
     private ErrorCodeDescriptions() {
         // Private constructor to prevent instantiation
