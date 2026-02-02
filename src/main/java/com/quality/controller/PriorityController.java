@@ -17,11 +17,13 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -96,7 +98,7 @@ public class PriorityController {
     })
     public ResponseEntity<PriorityDTO> findById(
             @Parameter(description = "ID de la prioridad", required = true, example = "1")
-            @PathVariable("id") Integer id) {
+            @PathVariable("id") @NonNull Integer id) {
         Priority obj = service.findById(id);
         return new ResponseEntity<>(this.convertToDto(obj), OK);
     }
@@ -141,6 +143,7 @@ public class PriorityController {
             )
         )
     })
+    @SuppressWarnings("null") // service.save() is @NonNull, guarantee satisfied
     public ResponseEntity<Void> save(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos de la prioridad a crear (sin ID)", required = true)
             @Valid @RequestBody PriorityDTO dto) {
@@ -201,9 +204,10 @@ public class PriorityController {
             )
         )
     })
+    @SuppressWarnings("null") // service.update() is @NonNull, guarantee satisfied
     public ResponseEntity<PriorityDTO> update(
             @Parameter(description = "ID de la prioridad", required = true, example = "1")
-            @PathVariable("id") Integer id,
+            @PathVariable("id") @NonNull Integer id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos actualizados de la prioridad", required = true)
             @Valid @RequestBody PriorityDTO dto) {
         dto.setIdPriority(id);
@@ -244,17 +248,21 @@ public class PriorityController {
     })
     public ResponseEntity<Void> delete(
             @Parameter(description = "ID de la prioridad", required = true, example = "1")
-            @PathVariable("id") Integer id) {
+            @PathVariable("id") @NonNull Integer id) {
         service.delete(id);
         return new ResponseEntity<>(NO_CONTENT);
     }
 
-    private PriorityDTO convertToDto(Priority obj) {
-        return mapper.map(obj, PriorityDTO.class);
+    @NonNull
+    @SuppressWarnings("null") // ModelMapper guarantees non-null mapping result
+    private PriorityDTO convertToDto(@NonNull Priority obj) {
+        return Objects.requireNonNull(mapper.map(obj, PriorityDTO.class), "Mapping result cannot be null");
     }
 
-    private Priority convertToEntity(PriorityDTO dto) {
-        return mapper.map(dto, Priority.class);
+    @NonNull
+    @SuppressWarnings("null") // ModelMapper guarantees non-null mapping result
+    private Priority convertToEntity(@NonNull PriorityDTO dto) {
+        return Objects.requireNonNull(mapper.map(dto, Priority.class), "Mapping result cannot be null");
     }
 }
 

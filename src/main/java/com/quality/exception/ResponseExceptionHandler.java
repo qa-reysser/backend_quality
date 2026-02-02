@@ -7,6 +7,7 @@ import com.quality.exception.validation.DuplicateFieldException;
 import com.quality.validation.ErrorCodeConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
+import org.springframework.lang.NonNull;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -19,6 +20,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @ControllerAdvice
 public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
@@ -28,9 +30,10 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
      * Applies Open/Closed Principle (OCP) - handles all header exceptions polymorphically.
      */
     @ExceptionHandler(HeaderException.class)
+    @NonNull
     public ResponseEntity<com.quality.exception.response.ErrorResponse> handleHeaderException(
-            HeaderException ex,
-            HttpServletRequest request
+            @NonNull HeaderException ex,
+            @NonNull HttpServletRequest request
     ) {
         com.quality.exception.response.ErrorResponse response = ErrorResponseBuilder.build(ex, request);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -41,9 +44,10 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
      * Applies Open/Closed Principle (OCP) - handles all resource not found exceptions polymorphically.
      */
     @ExceptionHandler(ResourceNotFoundException.class)
+    @NonNull
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-            ResourceNotFoundException ex,
-            HttpServletRequest request
+            @NonNull ResourceNotFoundException ex,
+            @NonNull HttpServletRequest request
     ) {
         ErrorResponse response = ResourceErrorResponseBuilder.build(ex, request);
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
@@ -55,12 +59,13 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
      * Returns HTTP 409 CONFLICT.
      */
     @ExceptionHandler(DuplicateFieldException.class)
+    @NonNull
     public ResponseEntity<ErrorResponse> handleDuplicateFieldException(
-            DuplicateFieldException ex,
-            HttpServletRequest request
+            @NonNull DuplicateFieldException ex,
+            @NonNull HttpServletRequest request
     ) {
-        String path = request.getRequestURI();
-        String method = request.getMethod();
+        String path = Objects.requireNonNull(request.getRequestURI(), "Request URI cannot be null");
+        String method = Objects.requireNonNull(request.getMethod(), "Request method cannot be null");
 
         // Build HATEOAS links
         Map<String, ErrorLink> links = new HashMap<>();
@@ -96,34 +101,38 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<CustomErrorResponse> handleAllException(ModelNotFoundException ex, WebRequest request) {
+    @NonNull
+    public ResponseEntity<CustomErrorResponse> handleAllException(@NonNull ModelNotFoundException ex, @NonNull WebRequest request) {
         CustomErrorResponse err = new CustomErrorResponse(LocalDateTime.now(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(err, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(ModelNotFoundException.class)
-    public org.springframework.web.ErrorResponse handleModelNotFoundException(ModelNotFoundException ex, WebRequest req) {
-        return org.springframework.web.ErrorResponse.builder(ex, HttpStatus.NOT_FOUND, ex.getMessage())
+    @NonNull
+    public org.springframework.web.ErrorResponse handleModelNotFoundException(@NonNull ModelNotFoundException ex, @NonNull WebRequest req) {
+        return org.springframework.web.ErrorResponse.builder(ex, HttpStatus.NOT_FOUND, Objects.requireNonNull(ex.getMessage(), "Error message cannot be null"))
                 .title("Model not found")
-                .type(URI.create(req.getContextPath()))
+                .type(Objects.requireNonNull(URI.create(req.getContextPath())))
                 .property("test", "value-test")
                 .property("age", 32)
                 .build();
     }
 
     @ExceptionHandler(SQLException.class)
-    public ResponseEntity<CustomErrorResponse> handleSQLException(SQLException ex, WebRequest req) {
+    @NonNull
+    public ResponseEntity<CustomErrorResponse> handleSQLException(@NonNull SQLException ex, @NonNull WebRequest req) {
         CustomErrorResponse res = new CustomErrorResponse(LocalDateTime.now(), ex.getMessage(), req.getDescription(false));
         return new ResponseEntity<>(res, HttpStatus.CONFLICT);
     }
 
 
     @Override
+    @NonNull
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request
+            @NonNull MethodArgumentNotValidException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request
     ) {
         // Process first field error to get details (similar to header error structure)
         FieldError firstError = ex.getBindingResult().getFieldErrors().get(0);
@@ -177,22 +186,28 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
                     // Fallback
                     subTypeCode = "RBV-003";
                     subTypeDescription = "field_length_invalid";
-                    constraint = firstError.getDefaultMessage();
-                    message = firstError.getDefaultMessage();
+                    constraint = Objects.requireNonNullElse(firstError.getDefaultMessage(), "Invalid length");
+                    message = Objects.requireNonNullElse(firstError.getDefaultMessage(), "Invalid length");
                 }
                 break;
             default:
                 // Generic validation error
                 subTypeCode = "RBV-000";
                 subTypeDescription = "validation_error";
-                constraint = firstError.getDefaultMessage();
-                message = firstError.getDefaultMessage();
+                constraint = Objects.requireNonNullElse(firstError.getDefaultMessage(), "Validation error");
+                message = Objects.requireNonNullElse(firstError.getDefaultMessage(), "Validation error");
                 break;
         }
 
         // Build error detail in same structure as headers (single object, not array)
-        String requestUri = ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getRequestURI();
-        String requestMethod = ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getMethod();
+        String requestUri = Objects.requireNonNull(
+            ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getRequestURI(),
+            "Request URI cannot be null"
+        );
+        String requestMethod = Objects.requireNonNull(
+            ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getMethod(),
+            "Request method cannot be null"
+        );
 
         Map<String, ErrorLink> links = new HashMap<>();
         links.put("self", ErrorLink.builder().href(requestUri).method(requestMethod).build());
@@ -231,14 +246,21 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
      * Triggered when a requested URL path doesn't match any controller mapping.
      */
     @Override
+    @NonNull
     protected ResponseEntity<Object> handleNoHandlerFoundException(
-            org.springframework.web.servlet.NoHandlerFoundException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request
+            @NonNull org.springframework.web.servlet.NoHandlerFoundException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request
     ) {
-        String requestUri = ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getRequestURI();
-        String requestMethod = ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getMethod();
+        String requestUri = Objects.requireNonNull(
+            ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getRequestURI(),
+            "Request URI cannot be null"
+        );
+        String requestMethod = Objects.requireNonNull(
+            ((org.springframework.web.context.request.ServletWebRequest) request).getRequest().getMethod(),
+            "Request method cannot be null"
+        );
 
         // Build HATEOAS links
         Map<String, ErrorLink> links = new HashMap<>();
