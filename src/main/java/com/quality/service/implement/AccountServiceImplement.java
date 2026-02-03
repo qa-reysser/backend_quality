@@ -27,6 +27,7 @@ public class AccountServiceImplement extends OperationsImplement<Account, Intege
     
     @Override
     @NonNull
+    @SuppressWarnings("null")
     protected IGenericRepository<Account, Integer> getRepo() {
         return repo;
     }
@@ -55,6 +56,7 @@ public class AccountServiceImplement extends OperationsImplement<Account, Intege
     
     @Override
     @NonNull
+    @SuppressWarnings("null")
     public Account findByAccountNumber(@NonNull String accountNumber) {
         Objects.requireNonNull(accountNumber, "Account number cannot be null");
         return repo.findByAccountNumber(accountNumber)

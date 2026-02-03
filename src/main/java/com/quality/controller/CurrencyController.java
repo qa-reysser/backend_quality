@@ -119,6 +119,7 @@ public class CurrencyController {
 
     @PutMapping("/{id}")
     @OpenApiHeaders
+    @SuppressWarnings("null")
     @Operation(
         summary = "Actualizar moneda", 
         description = "Actualiza completamente una moneda existente por su ID."

@@ -2,10 +2,8 @@ package com.quality.controller;
 
 import com.quality.config.OpenApiHeaders;
 import com.quality.dto.AccountActivationDTO;
-import com.quality.model.*;
+import com.quality.model.AccountActivation;
 import com.quality.service.implement.AccountActivationServiceImplement;
-import com.quality.service.implement.AccountServiceImplement;
-import com.quality.service.implement.TypeDocumentServiceImplement;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,8 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
@@ -35,10 +31,6 @@ import static org.springframework.http.HttpStatus.OK;
 @Tag(name = "Activación de Cuentas", description = "Operaciones para activar cuentas bancarias mediante validación de identidad")
 public class AccountActivationController {
     private final AccountActivationServiceImplement service;
-    private final AccountServiceImplement accountService;
-    private final TypeDocumentServiceImplement typeDocumentService;
-    @Qualifier("defaultMapper")
-    private final ModelMapper mapper;
 
     @GetMapping
     @OpenApiHeaders
@@ -204,30 +196,5 @@ public class AccountActivationController {
         dto.setActivationStatus(obj.getActivationStatus());
         dto.setErrorReason(obj.getErrorReason());
         return dto;
-    }
-
-    /**
-     * Converts to full DTO with all details - for internal admin use only.
-     * Currently not exposed through any endpoint for security reasons.
-     */
-    private AccountActivationDTO convertToDto(@NonNull AccountActivation obj) {
-        AccountActivationDTO dto = mapper.map(obj, AccountActivationDTO.class);
-        dto.setIdAccount(obj.getAccount().getIdAccount());
-        dto.setIdTypeDocument(obj.getTypeDocumentProvided().getIdTypeDocument());
-        dto.setTypeDocumentProvided(obj.getTypeDocumentProvided().getCode());
-        return dto;
-    }
-
-    private AccountActivation convertToEntity(@NonNull AccountActivationDTO dto) {
-        AccountActivation activation = mapper.map(dto, AccountActivation.class);
-        
-        // Set relationships - using account number for security (not exposing internal IDs)
-        Account account = accountService.findByAccountNumber(dto.getAccountNumber());
-        TypeDocument typeDocument = typeDocumentService.findById(dto.getIdTypeDocument());
-        
-        activation.setAccount(account);
-        activation.setTypeDocumentProvided(typeDocument);
-        
-        return activation;
     }
 }

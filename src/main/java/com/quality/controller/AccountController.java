@@ -28,6 +28,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -171,6 +172,7 @@ public class AccountController {
 
     @PutMapping("/{id}")
     @OpenApiHeaders
+    @SuppressWarnings("null")
     @Operation(
         summary = "Actualizar cuenta", 
         description = "Actualiza completamente una cuenta existente por su ID."
@@ -258,10 +260,14 @@ public class AccountController {
         // DO NOT map status - let entity use its default value (INACTIVE)
         // DO NOT map accountNumber - it will be generated in service layer
         
-        // Set relationships
-        Client client = clientService.findById(dto.getIdClient());
-        TypeAccount typeAccount = typeAccountService.findById(dto.getIdTypeAccount());
-        Currency currency = currencyService.findById(dto.getIdCurrency());
+        // Set relationships - with null checks
+        Integer idClient = Objects.requireNonNull(dto.getIdClient(), "Client ID cannot be null");
+        Integer idTypeAccount = Objects.requireNonNull(dto.getIdTypeAccount(), "Type account ID cannot be null");
+        Integer idCurrency = Objects.requireNonNull(dto.getIdCurrency(), "Currency ID cannot be null");
+        
+        Client client = clientService.findById(idClient);
+        TypeAccount typeAccount = typeAccountService.findById(idTypeAccount);
+        Currency currency = currencyService.findById(idCurrency);
         
         account.setClient(client);
         account.setTypeAccount(typeAccount);

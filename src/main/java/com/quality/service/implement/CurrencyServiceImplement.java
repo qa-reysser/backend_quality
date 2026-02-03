@@ -22,6 +22,7 @@ public class CurrencyServiceImplement extends OperationsImplement<Currency, Inte
     
     @Override
     @NonNull
+    @SuppressWarnings("null")
     protected IGenericRepository<Currency, Integer> getRepo() {
         return repo;
     }

@@ -22,6 +22,7 @@ public class TypeAccountServiceImplement extends OperationsImplement<TypeAccount
     
     @Override
     @NonNull
+    @SuppressWarnings("null")
     protected IGenericRepository<TypeAccount, Integer> getRepo() {
         return repo;
     }

@@ -77,7 +77,7 @@ public class AccountNumberGeneratorImplement implements IAccountNumberGenerator 
         }
         
         // Extract base and check digit
-        String base = accountNumber.substring(0, accountNumber.length() - 1);
+        String base = Objects.requireNonNull(accountNumber.substring(0, accountNumber.length() - 1), "Base string cannot be null");
         char checkDigitChar = accountNumber.charAt(accountNumber.length() - 1);
         
         // Validate check digit is a number

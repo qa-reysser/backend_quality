@@ -119,6 +119,7 @@ public class TypeAccountController {
 
     @PutMapping("/{id}")
     @OpenApiHeaders
+    @SuppressWarnings("null")
     @Operation(
         summary = "Actualizar tipo de cuenta", 
         description = "Actualiza completamente un tipo de cuenta existente por su ID."
