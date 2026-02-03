@@ -334,12 +334,16 @@ Content-Type: application/json         (solo POST/PUT)
 
 ```json
 {
-  "idAccount": 1,
+  "accountNumber": "SAUSD17385212345678",
   "idTypeDocument": 1,
   "documentNumber": "12345678"
 }
 ```
-**NOTA:** Valida que el documento coincida con el cliente titular de la cuenta.
+**NOTA:** 
+- Usa `accountNumber` en lugar de `idAccount` por seguridad (no expone IDs internos)
+- Valida que el tipo de documento y número coincidan con el cliente titular de la cuenta
+- Si coincide: `activationStatus` = SUCCESS y la cuenta cambia a ACTIVE
+- Si no coincide: `activationStatus` = FAILED con `errorReason` descriptivo
 
 ## 🎯 Validaciones Implementadas
 

@@ -59,7 +59,7 @@ public class AccountActivationController {
         )
     })
     public ResponseEntity<List<AccountActivationDTO>> findAll() {
-        List<AccountActivationDTO> list = service.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
+        List<AccountActivationDTO> list = service.findAll().stream().map(this::convertToSafeDto).collect(Collectors.toList());
         return new ResponseEntity<>(list, OK);
     }
 
@@ -92,7 +92,7 @@ public class AccountActivationController {
             @Parameter(description = "ID del registro de activación", required = true, example = "1")
             @PathVariable("id") @NonNull Integer id) {
         AccountActivation obj = service.findById(id);
-        return new ResponseEntity<>(this.convertToDto(obj), OK);
+        return new ResponseEntity<>(this.convertToSafeDto(obj), OK);
     }
 
     @PostMapping("/activate")
@@ -136,7 +136,7 @@ public class AccountActivationController {
             )
             @Valid @RequestBody AccountActivationDTO dto) {
         AccountActivation activation = service.activateAccount(dto);
-        AccountActivationDTO responseDto = convertToDto(activation);
+        AccountActivationDTO responseDto = convertToActivationResponseDto(activation);
         
         URI location = ServletUriComponentsBuilder
                 .fromCurrentContextPath()
@@ -180,19 +180,50 @@ public class AccountActivationController {
         return new ResponseEntity<>(NO_CONTENT);
     }
 
+    /**
+     * Converts to safe DTO without exposing sensitive information.
+     * Hides: document numbers, account numbers, type document codes.
+     * Shows only: ID, account ID reference, status, error reason, date.
+     */
+    private AccountActivationDTO convertToSafeDto(@NonNull AccountActivation obj) {
+        AccountActivationDTO dto = new AccountActivationDTO();
+        dto.setIdAccountActivation(obj.getIdAccountActivation());
+        dto.setIdAccount(obj.getAccount().getIdAccount());
+        dto.setActivationStatus(obj.getActivationStatus());
+        dto.setErrorReason(obj.getErrorReason());
+        dto.setAttemptDate(obj.getAttemptDate());
+        return dto;
+    }
+
+    /**
+     * Converts to minimal DTO for activation response - only the result.
+     * Returns only: activationStatus, errorReason (if failed).
+     */
+    private AccountActivationDTO convertToActivationResponseDto(@NonNull AccountActivation obj) {
+        AccountActivationDTO dto = new AccountActivationDTO();
+        dto.setActivationStatus(obj.getActivationStatus());
+        dto.setErrorReason(obj.getErrorReason());
+        return dto;
+    }
+
+    /**
+     * Converts to full DTO with all details - for internal admin use only.
+     * Currently not exposed through any endpoint for security reasons.
+     */
     private AccountActivationDTO convertToDto(@NonNull AccountActivation obj) {
         AccountActivationDTO dto = mapper.map(obj, AccountActivationDTO.class);
         dto.setIdAccount(obj.getAccount().getIdAccount());
-        dto.setIdTypeDocumentProvided(obj.getTypeDocumentProvided().getIdTypeDocument());
+        dto.setIdTypeDocument(obj.getTypeDocumentProvided().getIdTypeDocument());
+        dto.setTypeDocumentProvided(obj.getTypeDocumentProvided().getCode());
         return dto;
     }
 
     private AccountActivation convertToEntity(@NonNull AccountActivationDTO dto) {
         AccountActivation activation = mapper.map(dto, AccountActivation.class);
         
-        // Set relationships
-        Account account = accountService.findByAccountNumber(dto.getAccountNumberProvided());
-        TypeDocument typeDocument = typeDocumentService.findById(dto.getIdTypeDocumentProvided());
+        // Set relationships - using account number for security (not exposing internal IDs)
+        Account account = accountService.findByAccountNumber(dto.getAccountNumber());
+        TypeDocument typeDocument = typeDocumentService.findById(dto.getIdTypeDocument());
         
         activation.setAccount(account);
         activation.setTypeDocumentProvided(typeDocument);

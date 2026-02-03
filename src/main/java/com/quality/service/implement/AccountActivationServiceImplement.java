@@ -47,15 +47,15 @@ public class AccountActivationServiceImplement extends OperationsImplement<Accou
     @NonNull
     public AccountActivation activateAccount(@NonNull AccountActivationDTO dto) {
         Objects.requireNonNull(dto, "AccountActivationDTO cannot be null");
-        Objects.requireNonNull(dto.getAccountNumberProvided(), "Account number cannot be null");
-        Objects.requireNonNull(dto.getDocumentNumberProvided(), "Document number cannot be null");
-        Objects.requireNonNull(dto.getIdTypeDocumentProvided(), "Type document ID cannot be null");
+        Objects.requireNonNull(dto.getAccountNumber(), "Account number cannot be null");
+        Objects.requireNonNull(dto.getDocumentNumber(), "Document number cannot be null");
+        Objects.requireNonNull(dto.getIdTypeDocument(), "Type document ID cannot be null");
         
-        // Find account by account number
-        Account account = accountService.findByAccountNumber(dto.getAccountNumberProvided());
+        // Find account by account number (more secure than using ID)
+        Account account = accountService.findByAccountNumber(dto.getAccountNumber());
         
         // Get the type document provided
-        TypeDocument typeDocumentProvided = typeDocumentService.findById(dto.getIdTypeDocumentProvided());
+        TypeDocument typeDocumentProvided = typeDocumentService.findById(dto.getIdTypeDocument());
         
         // Get the account owner's information
         Client accountOwner = account.getClient();
@@ -64,15 +64,15 @@ public class AccountActivationServiceImplement extends OperationsImplement<Accou
         boolean isValid = validateActivation(
                 accountOwner,
                 typeDocumentProvided,
-                dto.getDocumentNumberProvided()
+                dto.getDocumentNumber()
         );
         
         // Create activation record
         AccountActivation activation = new AccountActivation();
         activation.setAccount(account);
         activation.setTypeDocumentProvided(typeDocumentProvided);
-        activation.setDocumentNumberProvided(dto.getDocumentNumberProvided());
-        activation.setAccountNumberProvided(dto.getAccountNumberProvided());
+        activation.setDocumentNumberProvided(dto.getDocumentNumber());
+        activation.setAccountNumberProvided(dto.getAccountNumber());
         activation.setAttemptDate(LocalDateTime.now());
         
         if (isValid) {
@@ -87,7 +87,7 @@ public class AccountActivationServiceImplement extends OperationsImplement<Accou
         } else {
             // Validation failed - record the failure
             activation.setActivationStatus(ActivationStatus.FAILED);
-            activation.setErrorReason(buildErrorReason(accountOwner, typeDocumentProvided, dto.getDocumentNumberProvided()));
+            activation.setErrorReason(buildErrorReason(accountOwner, typeDocumentProvided, dto.getDocumentNumber()));
         }
         
         // Save and return the activation record

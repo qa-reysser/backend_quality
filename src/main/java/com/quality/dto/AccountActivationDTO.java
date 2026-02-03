@@ -1,5 +1,6 @@
 package com.quality.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.quality.model.ActivationStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
@@ -14,30 +15,40 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "DTO de Activación de Cuenta")
 public class AccountActivationDTO {
     
     @Schema(description = "Identificador único", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Integer idAccountActivation;
 
-    @Schema(description = "ID de la cuenta a activar", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Schema(description = "ID de la cuenta (solo lectura)", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Integer idAccount;
-
-    @NotNull(message = "Type document ID is required")
-    @Schema(description = "ID del tipo de documento proporcionado", example = "1")
-    private Integer idTypeDocumentProvided;
-
-    @NotNull(message = "Document number is required")
-    @NotEmpty(message = "Document number cannot be empty")
-    @Size(min = 3, max = 20, message = "Document number must be between 3 and 20 characters")
-    @Schema(description = "Número de documento proporcionado", example = "12345678", minLength = 3, maxLength = 20)
-    private String documentNumberProvided;
 
     @NotNull(message = "Account number is required")
     @NotEmpty(message = "Account number cannot be empty")
     @Size(min = 10, max = 20, message = "Account number must be between 10 and 20 characters")
-    @Schema(description = "Número de cuenta proporcionado", example = "1234567890123456", minLength = 10, maxLength = 20)
+    @Schema(description = "Número de cuenta a activar", example = "SAUSD17385212345678", minLength = 10, maxLength = 20, requiredMode = Schema.RequiredMode.REQUIRED)
+    private String accountNumber;
+
+    @NotNull(message = "Type document ID is required")
+    @Schema(description = "ID del tipo de documento del titular", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Integer idTypeDocument;
+
+    @NotNull(message = "Document number is required")
+    @NotEmpty(message = "Document number cannot be empty")
+    @Size(min = 3, max = 20, message = "Document number must be between 3 and 20 characters")
+    @Schema(description = "Número de documento del titular", example = "12345678", minLength = 3, maxLength = 20, requiredMode = Schema.RequiredMode.REQUIRED)
+    private String documentNumber;
+
+    @Schema(description = "Número de cuenta proporcionado (guardado para auditoría)", example = "SAUSD17385212345678", accessMode = Schema.AccessMode.READ_ONLY)
     private String accountNumberProvided;
+
+    @Schema(description = "Tipo de documento proporcionado (guardado para auditoría)", example = "DNI", accessMode = Schema.AccessMode.READ_ONLY)
+    private String typeDocumentProvided;
+
+    @Schema(description = "Número de documento proporcionado (guardado para auditoría)", example = "12345678", accessMode = Schema.AccessMode.READ_ONLY)
+    private String documentNumberProvided;
 
     @Schema(description = "Estado de la activación", example = "SUCCESS", accessMode = Schema.AccessMode.READ_ONLY, allowableValues = {"SUCCESS", "FAILED"})
     private ActivationStatus activationStatus;

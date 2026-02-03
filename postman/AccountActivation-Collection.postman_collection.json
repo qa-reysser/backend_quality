@@ -87,8 +87,8 @@
 					"script": {
 						"exec": [
 							"// Validar que existan los datos necesarios",
-							"if (!pm.environment.get(\"savingsUsdAccountId\")) {",
-							"    console.error(\"savingsUsdAccountId no definido. Ejecuta Account collection primero.\");",
+						"if (!pm.environment.get(\"accountNumber\")) {",
+						"    console.error(\"accountNumber no definido. Ejecuta Account collection primero.\");",
 							"}",
 							"if (!pm.environment.get(\"typeDocumentId\")) {",
 							"    console.error(\"typeDocumentId no definido. Ejecuta TypeDocument collection primero.\");",
@@ -127,14 +127,14 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"idAccount\": {{savingsUsdAccountId}},\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"{{documentNumber}}\"\n}"
+					"raw": "{\n    \"accountNumber\": \"{{accountNumber}}\",\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"{{documentNumber}}\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/account-activations/activate",
 					"host": ["{{baseUrl}}"],
 					"path": ["account-activations", "activate"]
 				},
-				"description": "Activa una cuenta validando que el tipo de documento y número coincidan con el cliente titular de la cuenta. Si la validación es exitosa, cambia el status de la cuenta a ACTIVE y registra activationStatus=SUCCESS."
+				"description": "Activa una cuenta usando el número de cuenta (más seguro que usar ID). Valida que el tipo de documento y número coincidan con el cliente titular. Si es exitosa, cambia el status de la cuenta a ACTIVE y registra activationStatus=SUCCESS."
 			},
 			"response": []
 		},
@@ -189,14 +189,14 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"idAccount\": {{savingsUsdAccountId}},\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"99999999\"\n}"
+					"raw": "{\n    \"accountNumber\": \"{{accountNumber}}\",\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"99999999\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/account-activations/activate",
 					"host": ["{{baseUrl}}"],
 					"path": ["account-activations", "activate"]
 				},
-				"description": "Intenta activar una cuenta con un número de documento incorrecto. La activación fallará y se registrará con activationStatus=FAILED y errorReason indicando el motivo."
+				"description": "Intenta activar una cuenta con un número de documento incorrecto (99999999). La activación fallará y se registrará con activationStatus=FAILED y errorReason indicando el motivo."
 			},
 			"response": []
 		},
@@ -361,7 +361,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"idAccount\": {{savingsUsdAccountId}},\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"{{documentNumber}}\"\n}"
+					"raw": "{\n    \"accountNumber\": \"{{accountNumber}}\",\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"{{documentNumber}}\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/account-activations/{{successActivationId}}",
