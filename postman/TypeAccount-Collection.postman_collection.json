@@ -1,0 +1,323 @@
+{
+	"info": {
+		"_postman_id": "typeaccount-collection-001",
+		"name": "TypeAccount API - Backend Quality",
+		"description": "Colección completa para probar el CRUD de Tipos de Cuenta. Incluye validaciones de headers requeridos y unicidad de código.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "backend-quality"
+	},
+	"item": [
+		{
+			"name": "1. Listar todos los tipos de cuenta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"// Guardar el primer ID si existe",
+							"if (pm.response.json().length > 0) {",
+							"    pm.environment.set(\"typeAccountId\", pm.response.json()[0].idTypeAccount);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/type-accounts",
+					"host": ["{{baseUrl}}"],
+					"path": ["type-accounts"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Crear tipo de cuenta - Ahorros",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Location header exists\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"    var location = pm.response.headers.get(\"Location\");",
+							"    var id = location.split(\"/\").pop();",
+							"    pm.environment.set(\"savingsTypeAccountId\", id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"SAV\",\n    \"description\": \"Cuenta de Ahorros\",\n    \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-accounts",
+					"host": ["{{baseUrl}}"],
+					"path": ["type-accounts"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Crear tipo de cuenta - Corriente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"var id = location.split(\"/\").pop();",
+							"pm.environment.set(\"checkingTypeAccountId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"CHK\",\n    \"description\": \"Cuenta Corriente\",\n    \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-accounts",
+					"host": ["{{baseUrl}}"],
+					"path": ["type-accounts"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Obtener tipo de cuenta por ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('idTypeAccount');",
+							"    pm.expect(jsonData).to.have.property('code');",
+							"    pm.expect(jsonData).to.have.property('description');",
+							"    pm.expect(jsonData).to.have.property('active');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/type-accounts/{{savingsTypeAccountId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["type-accounts", "{{savingsTypeAccountId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Actualizar tipo de cuenta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Description was updated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.description).to.include(\"Premium\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"SAV\",\n    \"description\": \"Cuenta de Ahorros Premium\",\n    \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/type-accounts/{{savingsTypeAccountId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["type-accounts", "{{savingsTypeAccountId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Eliminar tipo de cuenta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/type-accounts/{{checkingTypeAccountId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["type-accounts", "{{checkingTypeAccountId}}"]
+				}
+			},
+			"response": []
+		}
+	]
+}

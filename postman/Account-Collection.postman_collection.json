@@ -1,0 +1,406 @@
+{
+	"info": {
+		"_postman_id": "account-collection-001",
+		"name": "Account API - Backend Quality",
+		"description": "Colección completa para probar el CRUD de Cuentas Bancarias. El número de cuenta se genera automáticamente. Las cuentas se crean en estado INACTIVE y deben activarse mediante AccountActivation.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "backend-quality"
+	},
+	"item": [
+		{
+			"name": "1. Listar todas las cuentas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"if (pm.response.json().length > 0) {",
+							"    var account = pm.response.json()[0];",
+							"    pm.environment.set(\"accountId\", account.idAccount);",
+							"    pm.environment.set(\"accountNumber\", account.accountNumber);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/accounts",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Crear cuenta - Ahorros USD",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Location header exists\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"    var location = pm.response.headers.get(\"Location\");",
+							"    var id = location.split(\"/\").pop();",
+							"    pm.environment.set(\"savingsUsdAccountId\", id);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Asegurarse de tener los IDs necesarios",
+							"if (!pm.environment.get(\"clientId\")) {",
+							"    console.error(\"clientId no está definido. Ejecuta la colección de Clientes primero.\");",
+							"}",
+							"if (!pm.environment.get(\"savingsTypeAccountId\")) {",
+							"    console.error(\"savingsTypeAccountId no está definido. Ejecuta la colección de TypeAccount primero.\");",
+							"}",
+							"if (!pm.environment.get(\"usdCurrencyId\")) {",
+							"    console.error(\"usdCurrencyId no está definido. Ejecuta la colección de Currency primero.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"idClient\": {{clientId}},\n    \"idTypeAccount\": {{savingsTypeAccountId}},\n    \"idCurrency\": {{usdCurrencyId}},\n    \"balance\": 5000.00\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts"]
+				},
+				"description": "Crea una cuenta de ahorros en USD. El accountNumber se genera automáticamente. El status será INACTIVE hasta que se active."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Crear cuenta - Corriente PEN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"var id = location.split(\"/\").pop();",
+							"pm.environment.set(\"checkingPenAccountId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"idClient\": {{clientId}},\n    \"idTypeAccount\": {{checkingTypeAccountId}},\n    \"idCurrency\": {{penCurrencyId}},\n    \"balance\": 10000.00\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Obtener cuenta por ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('idAccount');",
+							"    pm.expect(jsonData).to.have.property('accountNumber');",
+							"    pm.expect(jsonData).to.have.property('idClient');",
+							"    pm.expect(jsonData).to.have.property('idTypeAccount');",
+							"    pm.expect(jsonData).to.have.property('idCurrency');",
+							"    pm.expect(jsonData).to.have.property('balance');",
+							"    pm.expect(jsonData).to.have.property('status');",
+							"    pm.expect(jsonData).to.have.property('createdDate');",
+							"});",
+							"",
+							"pm.test(\"Account number was generated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.accountNumber).to.be.a('string');",
+							"    pm.expect(jsonData.accountNumber.length).to.be.greaterThan(0);",
+							"    pm.environment.set(\"accountNumber\", jsonData.accountNumber);",
+							"});",
+							"",
+							"pm.test(\"Status is INACTIVE\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql('INACTIVE');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{savingsUsdAccountId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{savingsUsdAccountId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Buscar cuenta por número de cuenta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Account number matches\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.accountNumber).to.eql(pm.environment.get(\"accountNumber\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/by-account-number/{{accountNumber}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "by-account-number", "{{accountNumber}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Actualizar cuenta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Balance was updated\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.balance).to.eql(7500.00);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"idClient\": {{clientId}},\n    \"idTypeAccount\": {{savingsTypeAccountId}},\n    \"idCurrency\": {{usdCurrencyId}},\n    \"balance\": 7500.00\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{savingsUsdAccountId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{savingsUsdAccountId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. Eliminar cuenta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/accounts/{{checkingPenAccountId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["accounts", "{{checkingPenAccountId}}"]
+				}
+			},
+			"response": []
+		}
+	]
+}

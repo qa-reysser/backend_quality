@@ -1,0 +1,370 @@
+{
+	"info": {
+		"_postman_id": "currency-collection-001",
+		"name": "Currency API - Backend Quality",
+		"description": "Colección completa para probar el CRUD de Monedas. Incluye validaciones de headers requeridos y códigos ISO 4217.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "backend-quality"
+	},
+	"item": [
+		{
+			"name": "1. Listar todas las monedas",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"if (pm.response.json().length > 0) {",
+							"    pm.environment.set(\"currencyId\", pm.response.json()[0].idCurrency);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/currencies",
+					"host": ["{{baseUrl}}"],
+					"path": ["currencies"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Crear moneda - USD",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"var id = location.split(\"/\").pop();",
+							"pm.environment.set(\"usdCurrencyId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"USD\",\n    \"name\": \"Dólar Estadounidense\",\n    \"symbol\": \"$\",\n    \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/currencies",
+					"host": ["{{baseUrl}}"],
+					"path": ["currencies"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3. Crear moneda - PEN",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"var id = location.split(\"/\").pop();",
+							"pm.environment.set(\"penCurrencyId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"PEN\",\n    \"name\": \"Sol Peruano\",\n    \"symbol\": \"S/\",\n    \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/currencies",
+					"host": ["{{baseUrl}}"],
+					"path": ["currencies"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "4. Crear moneda - EUR",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var location = pm.response.headers.get(\"Location\");",
+							"var id = location.split(\"/\").pop();",
+							"pm.environment.set(\"eurCurrencyId\", id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"EUR\",\n    \"name\": \"Euro\",\n    \"symbol\": \"€\",\n    \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/currencies",
+					"host": ["{{baseUrl}}"],
+					"path": ["currencies"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Obtener moneda por ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('idCurrency');",
+							"    pm.expect(jsonData).to.have.property('code');",
+							"    pm.expect(jsonData).to.have.property('name');",
+							"    pm.expect(jsonData).to.have.property('symbol');",
+							"    pm.expect(jsonData).to.have.property('active');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/currencies/{{usdCurrencyId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["currencies", "{{usdCurrencyId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Actualizar moneda",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"USD\",\n    \"name\": \"Dólar Americano\",\n    \"symbol\": \"US$\",\n    \"active\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/currencies/{{usdCurrencyId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["currencies", "{{usdCurrencyId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "7. Eliminar moneda",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/currencies/{{eurCurrencyId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["currencies", "{{eurCurrencyId}}"]
+				}
+			},
+			"response": []
+		}
+	]
+}

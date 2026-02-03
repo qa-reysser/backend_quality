@@ -62,6 +62,18 @@ public class ErrorCodeConstants {
     public static final String SUBTYPE_CODE_DUPLICATE_VALUE = "RBV-005";
     public static final String SUBTYPE_DUPLICATE_VALUE = "duplicate_value_detected";
 
+    // ========== Business logic error subtypes ==========
+    
+    // Account activation errors
+    public static final String SUBTYPE_CODE_ACTIVATION_FAILED = "ACT-001";
+    public static final String SUBTYPE_ACTIVATION_FAILED = "account_activation_failed";
+    
+    public static final String SUBTYPE_CODE_INVALID_CREDENTIALS = "ACT-002";
+    public static final String SUBTYPE_INVALID_CREDENTIALS = "invalid_activation_credentials";
+    
+    public static final String SUBTYPE_CODE_ACCOUNT_ALREADY_ACTIVE = "ACT-003";
+    public static final String SUBTYPE_ACCOUNT_ALREADY_ACTIVE = "account_already_active";
+
     // ========== Documentation URLs ==========
     
     // Documentation base URL (API Documentation)

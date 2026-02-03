@@ -1,0 +1,418 @@
+{
+	"info": {
+		"_postman_id": "account-activation-collection-001",
+		"name": "Account Activation API - Backend Quality",
+		"description": "Colección completa para probar la activación de cuentas bancarias. Valida la identidad del cliente comparando el tipo de documento y número de documento con los datos del titular de la cuenta.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "backend-quality"
+	},
+	"item": [
+		{
+			"name": "1. Listar todas las activaciones",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    pm.expect(pm.response.json()).to.be.an('array');",
+							"});",
+							"",
+							"if (pm.response.json().length > 0) {",
+							"    var activation = pm.response.json()[0];",
+							"    pm.environment.set(\"accountActivationId\", activation.idAccountActivation);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/account-activations",
+					"host": ["{{baseUrl}}"],
+					"path": ["account-activations"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2. Activar cuenta - Exitoso",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Location header exists\", function () {",
+							"    pm.response.to.have.header(\"Location\");",
+							"    var location = pm.response.headers.get(\"Location\");",
+							"    var id = location.split(\"/\").pop();",
+							"    pm.environment.set(\"successActivationId\", id);",
+							"});",
+							"",
+							"// Esperar un poco para que se procese",
+							"setTimeout(function(){}, 500);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Validar que existan los datos necesarios",
+							"if (!pm.environment.get(\"savingsUsdAccountId\")) {",
+							"    console.error(\"savingsUsdAccountId no definido. Ejecuta Account collection primero.\");",
+							"}",
+							"if (!pm.environment.get(\"typeDocumentId\")) {",
+							"    console.error(\"typeDocumentId no definido. Ejecuta TypeDocument collection primero.\");",
+							"}",
+							"if (!pm.environment.get(\"documentNumber\")) {",
+							"    console.error(\"documentNumber no definido. Asegúrate de tener un cliente creado.\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"idAccount\": {{savingsUsdAccountId}},\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"{{documentNumber}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account-activations/activate",
+					"host": ["{{baseUrl}}"],
+					"path": ["account-activations", "activate"]
+				},
+				"description": "Activa una cuenta validando que el tipo de documento y número coincidan con el cliente titular de la cuenta. Si la validación es exitosa, cambia el status de la cuenta a ACTIVE y registra activationStatus=SUCCESS."
+			},
+			"response": []
+		},
+		{
+			"name": "3. Activar cuenta - Fallido (documento incorrecto)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 or 201\", function () {",
+							"    // Puede ser 400 si se validó antes de crear el registro",
+							"    // o 201 con activationStatus=FAILED si se creó el registro",
+							"    pm.expect([201, 400]).to.include(pm.response.code);",
+							"});",
+							"",
+							"if (pm.response.code === 201) {",
+							"    var location = pm.response.headers.get(\"Location\");",
+							"    if (location) {",
+							"        var id = location.split(\"/\").pop();",
+							"        pm.environment.set(\"failedActivationId\", id);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"idAccount\": {{savingsUsdAccountId}},\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"99999999\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account-activations/activate",
+					"host": ["{{baseUrl}}"],
+					"path": ["account-activations", "activate"]
+				},
+				"description": "Intenta activar una cuenta con un número de documento incorrecto. La activación fallará y se registrará con activationStatus=FAILED y errorReason indicando el motivo."
+			},
+			"response": []
+		},
+		{
+			"name": "4. Obtener activación por ID (Exitosa)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('idAccountActivation');",
+							"    pm.expect(jsonData).to.have.property('idAccount');",
+							"    pm.expect(jsonData).to.have.property('accountNumberProvided');",
+							"    pm.expect(jsonData).to.have.property('idTypeDocument');",
+							"    pm.expect(jsonData).to.have.property('typeDocumentProvided');",
+							"    pm.expect(jsonData).to.have.property('documentNumberProvided');",
+							"    pm.expect(jsonData).to.have.property('activationStatus');",
+							"    pm.expect(jsonData).to.have.property('attemptDate');",
+							"});",
+							"",
+							"pm.test(\"Activation status is SUCCESS\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.activationStatus).to.eql('SUCCESS');",
+							"});",
+							"",
+							"pm.test(\"No error reason for successful activation\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.errorReason !== undefined) {",
+							"        pm.expect(jsonData.errorReason).to.be.null;",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/account-activations/{{successActivationId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["account-activations", "{{successActivationId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "5. Obtener activación por ID (Fallida)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Activation status is FAILED\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.activationStatus).to.eql('FAILED');",
+							"});",
+							"",
+							"pm.test(\"Error reason is provided\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.errorReason).to.exist;",
+							"    pm.expect(jsonData.errorReason).to.be.a('string');",
+							"    pm.expect(jsonData.errorReason.length).to.be.greaterThan(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/account-activations/{{failedActivationId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["account-activations", "{{failedActivationId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "6. Actualizar activación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"idAccount\": {{savingsUsdAccountId}},\n    \"idTypeDocument\": {{typeDocumentId}},\n    \"documentNumber\": \"{{documentNumber}}\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/account-activations/{{successActivationId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["account-activations", "{{successActivationId}}"]
+				},
+				"description": "Actualiza un registro de activación (rara vez necesario en producción, pero disponible para auditoría)."
+			},
+			"response": []
+		},
+		{
+			"name": "7. Eliminar activación",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "x-correlation-id",
+						"value": "{{xCorrelationId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-request-id",
+						"value": "{{xRequestId}}",
+						"type": "text"
+					},
+					{
+						"key": "x-transaction-id",
+						"value": "{{xTransactionId}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{baseUrl}}/account-activations/{{failedActivationId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["account-activations", "{{failedActivationId}}"]
+				}
+			},
+			"response": []
+		}
+	]
+}
